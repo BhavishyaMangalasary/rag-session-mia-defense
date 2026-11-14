@@ -16,7 +16,7 @@ MEntA paper are marked **[deviation]**.
 | Retriever | `all-mpnet-base-v2`, exact cosine search | One of the paper's two retrievers. Exact search instead of FAISS **[deviation]**: identical results at this corpus size |
 | Top-k | 3 | Paper's default |
 | Generator | Llama 3.1 8B via Ollama, temperature 0 | One of the paper's four generators; runs locally on 16 GB Apple Silicon. Temperature 0 for reproducibility |
-| System prompt | Plain "use the context to answer" | Keeps the target neutral; any "say I don't know" instruction comes from the attacker's query, as in MEntA |
+| System prompt | MEntA's abstention prompt (Appendix A): answer in 1–2 sentences from the context only, otherwise reply exactly "I don't know" | Matches the paper's target system. Refusals are part of MEntA's score (penalty), so the target must abstain the way the paper's does. Verified: member question → specific answer quoting the doc; non-member question → "I don't know" |
 
 ### Sanity checks (Step 1)
 

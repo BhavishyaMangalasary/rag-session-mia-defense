@@ -12,8 +12,12 @@ from sentence_transformers import SentenceTransformer
 
 from ragmia import config as C
 
-SYSTEM_PROMPT = ("You are a helpful assistant. Use the provided context documents "
-                 "to answer the user's question.")
+SYSTEM_PROMPT = (
+    "You must respond with exactly 'I don't know' (nothing else) if the context does not "
+    "provide enough information. Refusing to answer is always better than being uncertain "
+    "or inaccurate. Answer the question based only on the given context. If the answer is "
+    "known, respond with a clear answer (1-2 sentences) and a brief explanation."
+)
 
 
 class Retriever:
@@ -61,6 +65,7 @@ class RAG:
             for n, (d, _) in enumerate(hits, 1))
         reply = ollama_chat([
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"},
+            {"role": "user", "content": "Based on the following context, answer the question.\n\n"
+                                        f"Context:\n{context}\n\nQuestion: {query}"},
         ])
         return {"answer": reply, "retrieved": hits}
