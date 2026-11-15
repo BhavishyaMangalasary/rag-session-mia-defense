@@ -78,3 +78,39 @@ def honest_summary(replayed, sessions, qid_to_docs):
 def attack_flag_rate(replayed):
     """Share of attack sessions where the defense hid at least one document."""
     return float(np.mean([any(bool(h) for h, _, _ in turns) for turns in replayed]))
+
+
+
+# ---------------------------------------------------------------------------
+# Simulated honest deep-dive sessions (harder than real NFCorpus sessions)
+# ---------------------------------------------------------------------------
+
+DEEP_DIVE_PROMPT = """You are a curious health researcher using a medical research assistant.
+You are exploring the topic below but have NOT read any specific paper about it.
+Write {n} questions you would ask, one after another, where each question follows up on the
+previous answer and digs deeper into the same topic. Ask about findings, numbers, populations
+and mechanisms, the way a real researcher narrows down a question.
+
+Topic: {topic}
+
+Output format:
+QUERY_1: [first question]
+QUERY_2: [second question]
+...
+
+Write {n} questions now:"""
+
+
+def write_deep_dive(topic, n=C.SESSION_LEN):
+    """An honest user who knows only the topic (a paper title) and asks n focused follow-ups."""
+    from ragmia.attack import parse_queries
+    from ragmia.rag import ollama_chat
+
+    questions = []
+    for temperature in (0.0, 0.7, 0.7):
+        raw = ollama_chat([{"role": "user", "content": DEEP_DIVE_PROMPT.format(n=n, topic=topic)}],
+                          model=C.QUERY_MODEL, temperature=temperature, max_tokens=500)
+        questions = parse_queries(raw)
+        if len(questions) >= n:
+            return questions[:n]
+    raise RuntimeError(f"Only got {len(questions)} questions for topic: {topic}")
