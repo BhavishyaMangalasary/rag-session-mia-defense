@@ -87,3 +87,76 @@ def write_queries(doc, n=C.NUM_QUERIES):
 
 def attack_query(summary, question):
     return f"I am inquiring about {summary}. {question}"
+
+
+
+# ---------------------------------------------------------------------------
+# Part 2: entailment scoring (the "fact checker"), paper Section 5.5.
+# ---------------------------------------------------------------------------
+
+# Paper, Appendix A: refusal hypotheses. The last one is ours [deviation]: our target is told to
+# reply exactly "I don't know", so we include that phrase directly.
+IDK_HYPOTHESES = [
+    "I don't have enough information to answer this question.",
+    "The provided text does not contain the answer to this question.",
+    "I cannot determine the answer from the given information.",
+    "This information is not mentioned in the provided text.",
+    "I am unable to answer based on the available information.",
+    "There is no information provided about this.",
+    "The text does not specify this information.",
+    "I don't know.",
+]
+
+
+def split_sentences(text):
+    """Split an answer into short claims: one per line / sentence, bullets and numbering removed."""
+    sentences = []
+    for line in text.splitlines():
+        line = re.sub(r"^\s*(?:[-*•]+|\d+[.)])\s*", "", line).strip()
+        for s in re.split(r"(?<=[.!?])\s+(?=[A-Z0-9(\"'])", line):
+            s = s.strip(" *")
+            if len(s.split()) >= 2 or s.lower().startswith("i don"):
+                sentences.append(s)
+    return sentences or [text.strip()]
+
+
+class NLI:
+    """Wrapper around the paper's NLI model: premise -> hypothesis is entailed / neutral / contradicted."""
+
+    def __init__(self, model_name=C.NLI_MODEL):
+        import torch
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+        self.torch = torch
+        self.device = "mps" if torch.backends.mps.is_available() else "cpu"
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name).to(self.device).eval()
+        labels = {v.lower(): k for k, v in self.model.config.id2label.items()}
+        self.ent = next(i for name, i in labels.items() if name.startswith("entail"))
+
+    def entailed(self, premises, hypotheses, batch_size=8):
+        """For each (premise, hypothesis) pair: True if entailment is the most likely label."""
+        out = []
+        for i in range(0, len(premises), batch_size):
+            enc = self.tokenizer(premises[i:i + batch_size], hypotheses[i:i + batch_size],
+                                 truncation="only_first", max_length=C.NLI_MAX_LEN,
+                                 padding=True, return_tensors="pt").to(self.device)
+            with self.torch.no_grad():
+                logits = self.model(**enc).logits
+            out.extend((logits.argmax(dim=-1) == self.ent).tolist())
+        return out
+
+
+def score_answer(nli, document, answer):
+    """Paper Eq. 2-3. hit = some claim in the answer is entailed by the document;
+    idk = some claim in the answer is a refusal."""
+    claims = split_sentences(answer)
+    hit = any(nli.entailed([document] * len(claims), claims))
+    pairs = [(c, h) for c in claims for h in IDK_HYPOTHESES]
+    idk = any(nli.entailed([c for c, _ in pairs], [h for _, h in pairs]))
+    return int(hit), int(idk)
+
+
+def membership_score(hits_and_idks):
+    """Paper Eq. 4: average of (hit - idk) over the queries. Higher = more likely a member."""
+    return sum(h - i for h, i in hits_and_idks) / len(hits_and_idks)
