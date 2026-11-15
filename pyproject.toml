@@ -21,3 +21,7 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["ragmia"]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
