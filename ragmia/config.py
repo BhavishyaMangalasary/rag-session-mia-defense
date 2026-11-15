@@ -23,3 +23,10 @@ OLLAMA_URL = "http://localhost:11434/api/chat"
 GENERATOR_MODEL = "llama3.1:8b"
 GEN_TEMPERATURE = 0.0
 GEN_MAX_TOKENS = 400
+
+# Attack (MEntA)
+QUERY_MODEL = "qwen2.5:7b"        # writes the attacker's questions; must differ from GENERATOR_MODEL
+NUM_QUERIES = 5                   # query budget per target document (paper default)
+NLI_MODEL = "tasksource/deberta-base-long-nli"   # the "fact checker" (same model as the paper)
+NLI_MAX_LEN = 1024                # tokens; NFCorpus abstracts fit comfortably
+RESULTS_DIR = ROOT / "results"
