@@ -62,3 +62,42 @@ longer documents with real user queries, which are more distinctive, (3) the
 near-duplicate filter, which removes the similar non-members the paper names as a main
 source of false positives, and (4) temperature-0 generation and a different query writer.
 With 50 non-members, TPR @ 1% FPR means zero false positives.
+
+
+## Step 3 — Mirabel baseline (condition B)
+
+| Choice | Value | Why |
+|---|---|---|
+| Detection rule | Choi et al. (EMNLP Findings 2025), Algorithm 1: flag if s_max > τ, τ = μ_q + σ_q·√(2 ln n) + c·σ_q/√(2 ln n), c = −ln(−ln(1−ρ)) | Faithful to the published algorithm |
+| μ_q, σ_q | Mean and std of the query's similarity to every store document except the top one (n = 3,582) | As specified in Mirabel |
+| ρ | 0.05 | Mirabel's recommended value; also MEntA's setting |
+| Embedder | `all-mpnet-base-v2`, the RAG's own retriever **[deviation]** | Mirabel's paper used BGE-m3. Here the defense sits inside the RAG and uses its retriever's scores |
+| Hide action | Remove the flagged top-1 document; the next-ranked document fills the slot | Mirabel's detect-and-hide. Its paper does not say whether the slot is back-filled; we back-fill so the LLM always sees top-k documents |
+| Memory | None; every query is judged independently | Mirabel is a per-query defense |
+
+### Detection rates (no LLM, `scripts/05_mirabel_detection.py`)
+
+| Query set | Flagged |
+|---|---|
+| Honest NFCorpus queries (3,237) | **50.6%** (paper, Table 8: 59.6%) |
+| MEntA queries (500) | 59.4% |
+| … target is a member | 72.0% |
+| … target is a non-member | 46.8% |
+| MEntA sessions with ≥1 flag | 79.0% |
+
+Judged one query at a time, honest and attack queries are flagged at similar rates. Mirabel's
+signal ("one document matches unusually well") is shared by honest, specific questions.
+
+### Attack results under Mirabel
+
+| Metric | A. No defense | B. Mirabel |
+|---|---|---|
+| AUC | 0.986 (0.967–0.999) | **0.756** (0.652–0.846) |
+| TPR @ 1% FPR | 0.66 | 0.22 |
+| TPR @ 10% FPR | 0.96 | 0.52 |
+
+Per member document under Mirabel (out of 5 queries): 3.60 queries flagged, target hidden
+3.18 times, but the target still reached the context 1.52 times on unflagged queries, giving
+2.0 entailment hits. **Mirabel weakens the attack but does not stop it, at the cost of flagging
+about half of honest queries.** Because it has no memory, a document hidden on one query can
+leak on the next.

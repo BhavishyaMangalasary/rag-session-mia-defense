@@ -77,7 +77,8 @@ outside iCloud-synced folders.
 | 1. Smoke-test the RAG | `python scripts/02_smoke_test.py --generate` | ✅ |
 | 2. Generate attacker queries | `python scripts/03_generate_attack_queries.py` | ✅ |
 | 2. MEntA attack (condition A) | `python scripts/04_run_attack.py` | ✅ |
-| 3. Mirabel baseline (condition B) | — | ⏳ |
+| 3. Mirabel detection rates | `python scripts/05_mirabel_detection.py` | ✅ |
+| 3. MEntA vs Mirabel (condition B) | `python scripts/04_run_attack.py --defense mirabel` | ✅ |
 | 4. Session-level defense (condition C) | — | ⏳ |
 | 5. Benign and adaptive sessions | — | ⏳ |
 | 6. Full evaluation and plots | — | ⏳ |
@@ -92,7 +93,7 @@ Design choices and deviations from the paper are logged in
 | Condition | Attack AUC | TPR@1%FPR | Attack sessions flagged | Honest sessions flagged |
 |---|---|---|---|---|
 | A. No defense | 0.986 (95% CI 0.967–0.999) | 0.66 | n/a | n/a |
-| B. Mirabel | – | – | – | – |
+| B. Mirabel | 0.756 (95% CI 0.652–0.846) | 0.22 | 79.0% | 50.6% of single queries (sessions: Step 5) |
 | C. Session-level | – | – | – | – |
 
 ## Limitations
