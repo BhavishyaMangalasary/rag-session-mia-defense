@@ -71,8 +71,27 @@ class SessionDefense:
                 self.hidden.add(doc)
         return set(self.hidden)
 
+class MirabelSession:
+    """Condition D (ours): Mirabel + session memory.
 
-DEFENSES = {d.name: d for d in (NoDefense, Mirabel, SessionDefense)}
+    Mirabel's per-query test catches a document on the very first query, but with no memory the
+    same document can leak again on the next query that Mirabel misses. Here every document
+    Mirabel flags stays hidden for the rest of the session, and the session repetition rule
+    is applied as well.
+    """
+    name = "mirabel_session"
+
+    def __init__(self, rho=C.MIRABEL_RHO, window=C.SESSION_WINDOW, k=C.SESSION_K):
+        self.mirabel = Mirabel(rho=rho)
+        self.session = SessionDefense(window=window, k=k)
+        self.hidden = set()
+
+    def check(self, scores, ids):
+        self.hidden |= self.mirabel.check(scores, ids)
+        self.hidden |= self.session.check(scores, ids)
+        return set(self.hidden)
+
+DEFENSES = {d.name: d for d in (NoDefense, Mirabel, SessionDefense, MirabelSession)}
 
 
 def make_defense(name, **kwargs):
