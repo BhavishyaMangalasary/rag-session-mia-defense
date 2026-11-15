@@ -1,0 +1,49 @@
+prefix,decoys_per_question,queries_sent,defense,target_leaked,target_hidden
+True,0,5,none,4.68,0.0
+True,0,5,mirabel,1.52,3.18
+True,0,5,session,2.42,2.3
+True,0,5,mirabel_session,0.78,4.08
+True,0,5,session N=3 K=2,1.46,3.4
+True,0,5,session N=5 K=2,1.42,3.44
+True,1,10,none,4.68,0.0
+True,1,10,mirabel,1.52,3.18
+True,1,10,session,2.56,2.16
+True,1,10,mirabel_session,0.82,4.04
+True,1,10,session N=3 K=2,1.52,3.28
+True,1,10,session N=5 K=2,1.46,3.4
+True,2,15,none,4.68,0.0
+True,2,15,mirabel,1.52,3.18
+True,2,15,session,4.68,0.0
+True,2,15,mirabel_session,0.94,3.9
+True,2,15,session N=3 K=2,4.68,0.0
+True,2,15,session N=5 K=2,1.52,3.28
+True,3,20,none,4.68,0.0
+True,3,20,mirabel,1.52,3.18
+True,3,20,session,4.68,0.0
+True,3,20,mirabel_session,0.94,3.9
+True,3,20,session N=3 K=2,4.68,0.0
+True,3,20,session N=5 K=2,1.52,3.28
+False,0,5,none,3.98,0.0
+False,0,5,mirabel,2.06,1.96
+False,0,5,session,2.68,1.48
+False,0,5,mirabel_session,1.24,3.18
+False,0,5,session N=3 K=2,1.76,2.64
+False,0,5,session N=5 K=2,1.7,2.72
+False,1,10,none,3.98,0.0
+False,1,10,mirabel,2.06,1.96
+False,1,10,session,3.06,1.08
+False,1,10,mirabel_session,1.42,3.0
+False,1,10,session N=3 K=2,2.1,2.22
+False,1,10,session N=5 K=2,1.76,2.64
+False,2,15,none,3.98,0.0
+False,2,15,mirabel,2.06,1.96
+False,2,15,session,3.98,0.0
+False,2,15,mirabel_session,1.52,2.88
+False,2,15,session N=3 K=2,3.98,0.0
+False,2,15,session N=5 K=2,2.1,2.22
+False,3,20,none,3.98,0.0
+False,3,20,mirabel,2.06,1.96
+False,3,20,session,3.98,0.0
+False,3,20,mirabel_session,1.52,2.88
+False,3,20,session N=3 K=2,3.98,0.0
+False,3,20,session N=5 K=2,2.1,2.22
