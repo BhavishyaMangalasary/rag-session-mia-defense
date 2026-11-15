@@ -87,14 +87,35 @@ outside iCloud-synced folders.
 | 5. Honest sessions + session-rule sweep | `python scripts/07_honest_sessions.py` | ✅ |
 | 5. Simulated deep-dive and reader sessions | `python scripts/08_simulated_sessions.py` | ✅ |
 | 5. Adaptive attacker (decoys, no prefix) | `python scripts/09_adaptive_attacker.py` | ✅ |
-| 6. Full evaluation and plots | — | ⏳ |
+| 6. Figures and summary table | `python scripts/10_make_figures.py` | ✅ |
 
 Design choices and deviations from the paper are logged in
 [`docs/decisions.md`](docs/decisions.md).
 
-## Results
+## Key findings
 
-*To be filled in after the runs.*
+1. **Reproduction:** MEntA identifies members with AUC **0.986** using 5 natural queries
+   (paper: 0.935 for the same retriever, generator and dataset).
+2. **One answer is almost enough:** a single answer already gives the attacker AUC **0.924**,
+   so any defense that waits to observe a pattern cannot push the attack much below that.
+3. **Mirabel is noisy:** it flags **50.6%** of single honest queries and **~96%** of honest
+   sessions, while lowering the attacker's AUC only to 0.756.
+4. **Session rule (ours):** catches **82%** of attack sessions (98% at K=2) while flagging
+   **0%** of 400 real honest NFCorpus sessions: a near-free detector for everyday traffic.
+5. **Mirabel + memory (ours):** the strongest protection (AUC **0.669**, 93% of attacks flagged),
+   and robust to decoys, at Mirabel's cost to honest users.
+6. **Limits:** decoys (2 per question) evade the session rule; honest users who focus on one
+   specific paper are indistinguishable from attackers for every retrieval-based defense.
+
+![Attack AUC per defense](results/figures/fig1_attack_auc.png)
+![Who gets flagged](results/figures/fig2_who_gets_flagged.png)
+![Detection trade-off](results/figures/fig5_tradeoff.png)
+
+More figures: [query budget](results/figures/fig3_query_budget.png) ·
+[adaptive attacker](results/figures/fig4_adaptive_attacker.png) ·
+full numbers in [`docs/decisions.md`](docs/decisions.md).
+
+## Results
 
 | Condition | Attack AUC | TPR@1%FPR | Attack sessions flagged | Honest sessions flagged |
 |---|---|---|---|---|
