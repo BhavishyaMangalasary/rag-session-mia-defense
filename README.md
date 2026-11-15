@@ -84,7 +84,9 @@ outside iCloud-synced folders.
 | 4. MEntA vs session defense (condition C) | `python scripts/04_run_attack.py --defense session` | ✅ |
 | 4. MEntA vs Mirabel + memory (condition D) | `python scripts/04_run_attack.py --defense mirabel_session` | ✅ |
 | 4. Query-budget analysis | `python scripts/06_query_budget.py none mirabel session` | ✅ |
-| 5. Benign and adaptive sessions | — | ⏳ |
+| 5. Honest sessions + session-rule sweep | `python scripts/07_honest_sessions.py` | ✅ |
+| 5. Simulated deep-dive and reader sessions | `python scripts/08_simulated_sessions.py` | ✅ |
+| 5. Adaptive attacker (decoys, no prefix) | `python scripts/09_adaptive_attacker.py` | ✅ |
 | 6. Full evaluation and plots | — | ⏳ |
 
 Design choices and deviations from the paper are logged in
@@ -97,9 +99,9 @@ Design choices and deviations from the paper are logged in
 | Condition | Attack AUC | TPR@1%FPR | Attack sessions flagged | Honest sessions flagged |
 |---|---|---|---|---|
 | A. No defense | 0.986 (95% CI 0.967–0.999) | 0.66 | n/a | n/a |
-| B. Mirabel | 0.756 (95% CI 0.652–0.846) | 0.22 | 79.0% | 50.6% of single queries (sessions: Step 5) |
-| C. Session-level | 0.939 (95% CI 0.887–0.982) | 0.18 | 82.0% | Step 5 |
-| D. Mirabel + memory | 0.669 (95% CI 0.563–0.775) | 0.14 | 93.0% | Step 5 |
+| B. Mirabel | 0.756 (95% CI 0.652–0.846) | 0.22 | 79.0% | 95.5% focused / 97.0% browsing |
+| C. Session-level (N=5, K=3) | 0.939 (95% CI 0.887–0.982) | 0.18 | 82.0% | **0% / 0%** |
+| D. Mirabel + memory | **0.669** (95% CI 0.563–0.775) | **0.14** | **93.0%** | 95.5% / 97.0% |
 
 ## Limitations
 

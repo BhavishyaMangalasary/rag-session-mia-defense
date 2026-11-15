@@ -143,3 +143,80 @@ what raises false positives on honest users. With 1–2 answers the attacker's T
 overlaps with B's, so with 100 documents the improvement is suggestive rather than proven.
 D also hides more often (3.26 of 5 queries even in non-member sessions), which points to a
 higher cost for honest users. Step 5 measures that cost for every condition.
+
+
+## Step 5 — Cost to honest users and robustness to adaptive attackers
+
+All of Step 5 replays retrieval only (no LLM): whether a defense hides a document depends only on
+similarity scores. The replayed attack flag rates match the full Step 4 runs exactly
+(79% / 82% / 93%; target leaks 4.68 / 1.52 / 2.42 / 0.78), which validates the replay.
+
+| Choice | Value | Why |
+|---|---|---|
+| Honest "focused" sessions | 200 × 5 real NFCorpus queries, all judged relevant to the same store document (seed 528) | A real user digging into one topic: the case closest to an attack |
+| Honest "browsing" sessions | 200 × 5 random real NFCorpus queries | Everyday traffic |
+| "Flagged" | The defense hid at least one document during the session | Same definition as for attack sessions |
+| Utility cost | Share of queries whose top-3 changed; relevant documents (NFCorpus judgments) lost from the top-3 | What an honest user actually loses |
+| Honest "deep-dive" sessions | 100 × 5 follow-up questions written by Qwen from the paper's **title** only | Stress test: a researcher focusing on one specific paper |
+| "Reader" sessions | MEntA's 5 questions without the "I am inquiring about" prefix | Someone who has the document; indistinguishable from an attacker by design (upper bound) |
+| Adaptive attacker | 0–3 random real decoy queries after each attack question; with and without prefix | Tries to keep the target from repeating inside the defense's window |
+
+### Honest users (real NFCorpus sessions)
+
+| | B. Mirabel | C. Session (5,3) | D. Mirabel + memory |
+|---|---|---|---|
+| Attack sessions flagged | 79% | 82% | 93% |
+| Focused honest sessions flagged | 95.5% | **0%** | 95.5% |
+| Browsing honest sessions flagged | 97.0% | **0%** | 97.0% |
+| Honest queries with changed context | ~50% | **0%** | ~50% |
+| Relevant docs lost per query | 0.07–0.10 | **0** | 0.07–0.10 |
+
+Session rule sweep (selected): (N=3, K=2) flags 98% of attacks, 6% of focused and 0.5% of
+browsing honest sessions; (N=5, K=2) flags 99% / 8.5% / 0.5%. Full table: `results/session_sweep.csv`.
+
+### Harder honest users (simulated)
+
+| Sessions flagged | Mirabel | Session (5,3) | Mirabel + memory | Session (3,2) | Session (5,2) |
+|---|---|---|---|---|---|
+| Attack (MEntA) | 79% | 82% | 93% | 98% | 99% |
+| Honest deep-dive | 75% | 70% | 86% | 86% | 90% |
+| Reader (no prefix) | 73% | 57% | 83% | 87% | 96% |
+
+Because the deep-dive prompt sees the paper's exact title, its questions target that specific
+study, which is what an attacker does too. **No retrieval-based defense can tell an attacker
+from an honest user who wants the same specific document: intent is not visible in the query
+stream.** The session defense's advantage is over everyday traffic, not over paper-specific
+deep dives. Dropping the prefix lowers the session defense's detection (82% → 57%).
+
+### Adaptive attacker: target leaks per member session (of 5 attack questions)
+
+| Defense | 0 decoys | 1 | 2 | 3 |
+|---|---|---|---|---|
+| None | 4.68 | 4.68 | 4.68 | 4.68 |
+| Mirabel | 1.52 | 1.52 | 1.52 | 1.52 |
+| Session (5,3) | 2.42 | 2.56 | **4.68** | 4.68 |
+| Session (3,2) | 1.46 | 1.52 | **4.68** | 4.68 |
+| Session (5,2) | 1.42 | 1.46 | 1.52 | 1.52 |
+| Mirabel + memory | **0.78** | **0.82** | **0.94** | **0.94** |
+
+With 2 decoys per question (15 queries instead of 5) the attacker fully evades the session rule
+at (5,3) and (3,2). (5,2) resists up to 3 decoys, but any fixed window is evaded once decoys
+spread the target further apart than the window, and an attacker who uses separate sessions or
+accounts is invisible to any per-session defense. The combined defense D stays below one leak
+per session even with decoys, because Mirabel's per-query test is not affected by spacing.
+Without the prefix the attacker gets the target less often (3.98 vs 4.68 undefended) but every
+defense also hides it less (see `results/adaptive_attacker.csv`).
+
+### Overall conclusion
+
+| | Mirabel | Session (ours) | Mirabel + memory (ours) |
+|---|---|---|---|
+| Detects attacks | 79% | 82% (98% at K=2) | **93%** |
+| Bothers everyday honest users | ~96% | **0%** | ~96% |
+| Limits leakage (attacker AUC) | 0.756 | 0.939 | **0.669** |
+| Robust to decoys | yes | no | **yes** |
+
+The session rule is a near-free **detector** for everyday traffic (flag, rate-limit, review),
+but on its own it cannot stop the leak (one answer already gives AUC 0.924) and decoys evade it.
+Adding session memory to Mirabel gives the strongest protection against both the standard and
+the adaptive attacker, at Mirabel's cost to honest users. No single defense wins on every axis.
