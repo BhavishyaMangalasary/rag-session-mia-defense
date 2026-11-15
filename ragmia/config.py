@@ -37,3 +37,8 @@ MIRABEL_RHO = 0.05                # significance level (Mirabel's recommended va
 
 SESSION_WINDOW = 5                # session defense: look at the last N queries ...
 SESSION_K = 3                     # ... and hide a document once it was the top match in >= K of them
+
+
+# Honest (benign) sessions
+SESSION_LEN = 5                   # queries per honest session (same as the attack's budget)
+N_HONEST_SESSIONS = 200           # per honest session type
