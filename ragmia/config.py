@@ -34,3 +34,6 @@ RESULTS_DIR = ROOT / "results"
 
 # Defenses
 MIRABEL_RHO = 0.05                # significance level (Mirabel's recommended value, also used by MEntA)
+
+SESSION_WINDOW = 5                # session defense: look at the last N queries ...
+SESSION_K = 3                     # ... and hide a document once it was the top match in >= K of them
