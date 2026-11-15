@@ -61,7 +61,7 @@ cd rag-session-mia-defense
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -e .
-ollama pull llama3.1:8b
+ollama pull qwen2.5:7b
 ```
 
 **macOS note:** if `import ragmia` fails with `ModuleNotFoundError` after installing,
@@ -75,7 +75,8 @@ outside iCloud-synced folders.
 |---|---|---|
 | 1. Prepare data and index | `python scripts/01_prepare_data.py` | ✅ |
 | 1. Smoke-test the RAG | `python scripts/02_smoke_test.py --generate` | ✅ |
-| 2. MEntA attack (condition A) | — | ⏳ |
+| 2. Generate attacker queries | `python scripts/03_generate_attack_queries.py` | ✅ |
+| 2. MEntA attack (condition A) | `python scripts/04_run_attack.py` | ✅ |
 | 3. Mirabel baseline (condition B) | — | ⏳ |
 | 4. Session-level defense (condition C) | — | ⏳ |
 | 5. Benign and adaptive sessions | — | ⏳ |
@@ -90,7 +91,7 @@ Design choices and deviations from the paper are logged in
 
 | Condition | Attack AUC | TPR@1%FPR | Attack sessions flagged | Honest sessions flagged |
 |---|---|---|---|---|
-| A. No defense | – | – | n/a | n/a |
+| A. No defense | 0.986 (95% CI 0.967–0.999) | 0.66 | n/a | n/a |
 | B. Mirabel | – | – | – | – |
 | C. Session-level | – | – | – | – |
 

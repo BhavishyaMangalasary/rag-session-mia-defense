@@ -25,3 +25,40 @@ MEntA paper are marked **[deviation]**.
 - End-to-end example: a member question (MED-2217) retrieved the member and the
   answer quoted its exact statistics; a non-member question (MED-4735) was answered
   from neighbouring documents only. This is the leakage MEntA exploits.
+
+
+## Step 2 — MEntA attack (condition A: no defense)
+
+| Choice | Value | Why |
+|---|---|---|
+| Query writer | Qwen 2.5 7B via Ollama **[deviation]** | Must differ from the RAG generator so the target cannot "recognize" its own phrasing. Paper used an OpenAI model; Qwen runs locally for free |
+| Query prompt | Paper's Figure 13 template, verbatim | Faithful reproduction; spreads 5 questions across beginning, middle and end of the document |
+| Topic prefix | "I am inquiring about <topic>. <question>"; topic phrase written by the query model | Summary-prepending from IA, used by MEntA to steer retrieval toward the target. The paper does not print its summary prompt, so ours is written to produce the short topic phrase shown in its Table 2 |
+| Query budget | 5 per document | Paper default |
+| NLI model | `tasksource/deberta-base-long-nli` (argmax = entailment) | Same model as the paper |
+| Claim splitting | Answer split into sentences / lines, bullets removed | Paper splits answers into atomic sentences before checking entailment |
+| Refusal hypotheses | Paper's 7 paraphrases + "I don't know." **[deviation]** | Our target is told to reply exactly "I don't know", so the phrase itself is included |
+| Score | mean over 5 queries of (hit − refusal) | Paper Eq. 4 |
+
+### Results (condition A)
+
+| Metric | Ours (50 + 50 docs) | Paper (Table 5: Llama 3.1 8B, all-mpnet-base-v2, NFCorpus, top-3) |
+|---|---|---|
+| AUC | **0.986** (95% CI 0.967–0.999) | 0.935 |
+| TPR @ 1% FPR | **0.66** | 0.363 |
+| TPR @ 10% FPR | **0.96** | — |
+
+Per document, out of 5 queries:
+
+| | Target retrieved | Hits | Refusals | Mean score |
+|---|---|---|---|---|
+| Members | 4.68 | 4.46 | 0.66 | +0.76 |
+| Non-members | 0.00 | 0.54 | 3.98 | −0.69 |
+
+**Interpretation.** The reproduction confirms the paper's claim: five natural queries
+separate members from non-members almost perfectly. Our AUC is higher than the paper's,
+likely because of (1) the small sample (wide CI), (2) the target pool restricted to
+longer documents with real user queries, which are more distinctive, (3) the
+near-duplicate filter, which removes the similar non-members the paper names as a main
+source of false positives, and (4) temperature-0 generation and a different query writer.
+With 50 non-members, TPR @ 1% FPR means zero false positives.
