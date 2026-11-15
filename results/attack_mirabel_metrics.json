@@ -1,0 +1,11 @@
+{
+ "auc": 0.7558,
+ "auc_95ci": [
+  0.6516301654706945,
+  0.8455400578105638
+ ],
+ "tpr@1%fpr": 0.22,
+ "tpr@10%fpr": 0.52,
+ "attack_query_flag_rate": 0.594,
+ "attack_sessions_flagged": 0.79
+}
