@@ -30,3 +30,7 @@ NUM_QUERIES = 5                   # query budget per target document (paper defa
 NLI_MODEL = "tasksource/deberta-base-long-nli"   # the "fact checker" (same model as the paper)
 NLI_MAX_LEN = 1024                # tokens; NFCorpus abstracts fit comfortably
 RESULTS_DIR = ROOT / "results"
+
+
+# Defenses
+MIRABEL_RHO = 0.05                # significance level (Mirabel's recommended value, also used by MEntA)

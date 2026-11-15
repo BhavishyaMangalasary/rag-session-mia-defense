@@ -1,0 +1,8 @@
+{
+ "honest_queries": 3237,
+ "honest_query_flag_rate": 0.5060240963855421,
+ "attack_query_flag_rate": 0.594,
+ "attack_query_flag_rate_member_targets": 0.72,
+ "attack_query_flag_rate_nonmember_targets": 0.468,
+ "attack_sessions_with_any_flag": 0.79
+}

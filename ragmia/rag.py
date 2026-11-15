@@ -1,8 +1,8 @@
 """Step 1d: the target RAG system (retriever + Ollama generator).
 
 The attacker only ever sees `answer`. The retrieved ids and similarity scores are
-server-side information; the defenses (Mirabel, session tracker) will use them.
-`exclude` lets a defense hide documents from the context (Mirabel's 'hide' action).
+server-side information; the defenses (Mirabel, session tracker) use them.
+A defense can hide documents before the top-k context is built.
 """
 import json
 
@@ -30,9 +30,13 @@ class Retriever:
         self.emb = all_emb[keep]
         self.model = SentenceTransformer(C.RETRIEVER_MODEL)
 
-    def search(self, query, k=C.TOP_K, exclude=()):
-        q = self.model.encode(query, normalize_embeddings=True)
-        scores = self.emb @ q
+    def scores(self, query):
+        """Cosine similarity of the query to every document in the store (same order as self.ids)."""
+        return self.emb @ self.model.encode(query, normalize_embeddings=True)
+
+    def search(self, query, k=C.TOP_K, exclude=(), scores=None):
+        if scores is None:
+            scores = self.scores(query)
         out = []
         for i in np.argsort(-scores):
             if self.ids[i] in exclude:
@@ -58,8 +62,12 @@ class RAG:
         self.corpus = corpus  # {doc_id: {"title", "text"}}
         self.retriever = Retriever()
 
-    def answer(self, query, exclude=()):
-        hits = self.retriever.search(query, exclude=exclude)
+    def answer(self, query, defense=None):
+        """Answer one query. If a defense is given, it sees the query's similarity to every
+        document and may hide some of them before the top-k context is built."""
+        scores = self.retriever.scores(query)
+        hidden = defense.check(scores, self.retriever.ids) if defense is not None else set()
+        hits = self.retriever.search(query, exclude=hidden, scores=scores)
         context = "\n\n".join(
             f"[Document {n}] {self.corpus[d]['title']}\n{self.corpus[d]['text']}"
             for n, (d, _) in enumerate(hits, 1))
@@ -68,4 +76,4 @@ class RAG:
             {"role": "user", "content": "Based on the following context, answer the question.\n\n"
                                         f"Context:\n{context}\n\nQuestion: {query}"},
         ])
-        return {"answer": reply, "retrieved": hits}
+        return {"answer": reply, "retrieved": hits, "hidden": sorted(hidden)}
