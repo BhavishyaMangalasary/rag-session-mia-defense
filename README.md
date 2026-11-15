@@ -38,6 +38,7 @@ Three conditions, each evaluated on attack sessions and honest sessions:
 | A. No defense | Reproduces MEntA's attack |
 | B. Mirabel | Per-query similarity-outlier detection + hide |
 | C. Session-level (ours) | Flag when one doc is top-1 in ≥K of the last N queries + hide |
+| D. Mirabel + memory (ours) | Mirabel's flags stay hidden for the whole session, plus the C rule |
 
 **Metrics:** attack AUC and TPR@1%FPR · share of attack sessions flagged ·
 share of honest sessions flagged (false-positive rate) · honest-query utility.
@@ -79,7 +80,10 @@ outside iCloud-synced folders.
 | 2. MEntA attack (condition A) | `python scripts/04_run_attack.py` | ✅ |
 | 3. Mirabel detection rates | `python scripts/05_mirabel_detection.py` | ✅ |
 | 3. MEntA vs Mirabel (condition B) | `python scripts/04_run_attack.py --defense mirabel` | ✅ |
-| 4. Session-level defense (condition C) | — | ⏳ |
+| 4. Unit tests (also run by GitHub Actions) | `pytest -v` | ✅ |
+| 4. MEntA vs session defense (condition C) | `python scripts/04_run_attack.py --defense session` | ✅ |
+| 4. MEntA vs Mirabel + memory (condition D) | `python scripts/04_run_attack.py --defense mirabel_session` | ✅ |
+| 4. Query-budget analysis | `python scripts/06_query_budget.py none mirabel session` | ✅ |
 | 5. Benign and adaptive sessions | — | ⏳ |
 | 6. Full evaluation and plots | — | ⏳ |
 
@@ -94,7 +98,8 @@ Design choices and deviations from the paper are logged in
 |---|---|---|---|---|
 | A. No defense | 0.986 (95% CI 0.967–0.999) | 0.66 | n/a | n/a |
 | B. Mirabel | 0.756 (95% CI 0.652–0.846) | 0.22 | 79.0% | 50.6% of single queries (sessions: Step 5) |
-| C. Session-level | – | – | – | – |
+| C. Session-level | 0.939 (95% CI 0.887–0.982) | 0.18 | 82.0% | Step 5 |
+| D. Mirabel + memory | 0.669 (95% CI 0.563–0.775) | 0.14 | 93.0% | Step 5 |
 
 ## Limitations
 

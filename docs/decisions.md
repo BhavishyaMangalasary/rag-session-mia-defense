@@ -101,3 +101,45 @@ Per member document under Mirabel (out of 5 queries): 3.60 queries flagged, targ
 2.0 entailment hits. **Mirabel weakens the attack but does not stop it, at the cost of flagging
 about half of honest queries.** Because it has no memory, a document hidden on one query can
 leak on the next.
+
+
+## Step 4 — Session-level defenses (conditions C and D, ours)
+
+| Choice | Value | Why |
+|---|---|---|
+| C. Session rule | Track the top-1 document of the last N=5 queries; once one document is top-1 in ≥K=3 of them, hide it for the rest of the session | An attacker's queries keep landing on the same document; one specific honest question does not repeat. N and K from the proposal |
+| Counting | The raw top-1 is counted even after it is hidden | Otherwise hiding would reset the counter and the attacker could escape the rule |
+| Session | One target document's 5 attack queries, with a fresh defense object per session | Matches how MEntA is run per target |
+| D. Combined | Mirabel's per-query flag + session memory (any flagged document stays hidden for the rest of the session) + the C rule | Step 3 showed Mirabel hides the target on flagged queries but it leaks again on the next unflagged one |
+| Tests | 10 unit tests in `tests/`, run on every push by GitHub Actions | Defense logic needs no models, so it is checked automatically |
+
+### Attack results (all conditions)
+
+| Metric | A. None | B. Mirabel | C. Session | D. Mirabel + memory |
+|---|---|---|---|---|
+| AUC (95% CI) | 0.986 (0.967–0.999) | 0.756 (0.652–0.846) | 0.939 (0.887–0.982) | **0.669** (0.563–0.775) |
+| TPR @ 1% FPR | 0.66 | 0.22 | 0.18 | **0.14** |
+| TPR @ 10% FPR | 0.96 | 0.52 | 0.56 | **0.44** |
+| Attack sessions flagged | — | 79% | 82% | 93% |
+| Target in context (members, of 5) | 4.68 | 1.52 | 2.42 | **0.78** |
+| Queries flagged (non-member sessions, of 5) | — | 2.34 | 1.64 | 3.26 |
+
+### Key finding: one answer is almost enough (`scripts/06_query_budget.py`)
+
+| Answers used | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| AUC, no defense | **0.924** | 0.971 | 0.983 | 0.987 | 0.986 |
+| AUC, session (C) | 0.924 | 0.971 | 0.960 | 0.944 | 0.939 |
+| AUC, Mirabel (B) | 0.662 | 0.744 | 0.745 | 0.742 | 0.756 |
+
+A single MEntA answer already separates members from non-members with AUC 0.924. Any defense
+that waits to observe a pattern (C, at any K) lets at least the first answer through, so it
+cannot push the attacker's AUC below about 0.92. Only a defense that can act on the first
+query (B, D) lowers it further, and such a defense must judge each query alone, which is
+what raises false positives on honest users. With 1–2 answers the attacker's TPR @ 1% FPR is
+0.00 (scores are too coarse), so strict operating points stay protected early in a session.
+
+**Interpretation.** D gives the strongest protection (AUC 0.669), but its confidence interval
+overlaps with B's, so with 100 documents the improvement is suggestive rather than proven.
+D also hides more often (3.26 of 5 queries even in non-member sessions), which points to a
+higher cost for honest users. Step 5 measures that cost for every condition.
