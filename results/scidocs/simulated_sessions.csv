@@ -1,0 +1,6 @@
+defense,attack (MEntA),honest deep-dive,reader (= attack without prefix)
+mirabel,0.99,0.98,0.97
+session,0.71,0.58,0.39
+mirabel_session,0.99,0.98,0.99
+session N=3 K=2,0.9,0.74,0.59
+session N=5 K=2,0.95,0.88,0.65

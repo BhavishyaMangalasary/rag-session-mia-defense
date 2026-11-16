@@ -1,6 +1,6 @@
 """Step 3d: how often does Mirabel flag honest queries vs attack queries? (detection only, no LLM)
 
-Honest queries: every real user query that ships with NFCorpus.
+Honest queries: every real user query that ships with the dataset (NFCorpus or SCIDOCS).
 Attack queries: the 500 MEntA queries from Step 2c.
 Output: results/mirabel_detection.json
 """
@@ -25,7 +25,7 @@ def flagged(queries):
 
 
 _, queries, _ = load_beir(C.RAW_DIR / C.DATASET)
-print(f"Checking {len(queries)} honest NFCorpus queries ...")
+print(f"Checking {len(queries)} honest {C.DATASET} queries ...")
 benign = flagged(list(queries.values()))
 
 attacks = [json.loads(line) for line in (C.DATA_DIR / "attack_queries.jsonl").open()]
@@ -44,8 +44,9 @@ results = {
 C.RESULTS_DIR.mkdir(exist_ok=True)
 (C.RESULTS_DIR / "mirabel_detection.json").write_text(json.dumps(results, indent=1))
 
-print(f"\nHonest queries wrongly flagged : {results['honest_query_flag_rate']:.1%}"
-      f"  (paper, Table 8, NFCorpus: 59.6%)")
+PAPER_FPR = {"nfcorpus": "59.6%", "scidocs": "88.1%"}   # MEntA paper, Mirabel's benign FPR
+paper_ref = f"  (paper: {PAPER_FPR[C.DATASET]})" if C.DATASET in PAPER_FPR else ""
+print(f"\nHonest queries wrongly flagged : {results['honest_query_flag_rate']:.1%}{paper_ref}")
 print(f"Attack queries flagged         : {results['attack_query_flag_rate']:.1%}")
 print(f"  ... targets in the cabinet   : {results['attack_query_flag_rate_member_targets']:.1%}")
 print(f"  ... targets not in cabinet   : {results['attack_query_flag_rate_nonmember_targets']:.1%}")

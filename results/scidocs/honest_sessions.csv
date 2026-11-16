@@ -1,0 +1,5 @@
+defense,attack_sessions_flagged,focused_sessions_flagged,browsing_sessions_flagged,focused_queries_changed,browsing_queries_changed,focused_relevant_lost,browsing_relevant_lost
+none,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+mirabel,0.99,0.975,1.0,0.645,0.821,0.045,0.093
+session,0.71,0.0,0.0,0.0,0.0,0.0,0.0
+mirabel_session,0.99,0.975,1.0,0.645,0.821,0.045,0.093

@@ -170,7 +170,7 @@ ax.set_xlim(-4, 104)
 ax.set_ylim(40, 104)
 ax.set_xlabel("Honest focused sessions flagged (%)  - lower is better")
 ax.set_ylabel("Attack sessions flagged (%)  - higher is better")
-ax.set_title("Detection trade-off on real NFCorpus users")
+ax.set_title(f"Detection trade-off on real {({'nfcorpus': 'NFCorpus', 'scidocs': 'SCIDOCS'}).get(C.DATASET, C.DATASET)} users")
 ax.legend(frameon=False, loc="lower right", fontsize=8)
 save(fig, "fig5_tradeoff")
 
