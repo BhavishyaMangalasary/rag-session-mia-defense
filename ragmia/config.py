@@ -1,12 +1,15 @@
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
-RAW_DIR = DATA_DIR / "raw"
 
-# Dataset (BEIR format: corpus.jsonl, queries.jsonl, qrels/*.tsv)
-DATASET = "nfcorpus"
+# Dataset (BEIR format: corpus.jsonl, queries.jsonl, qrels/*.tsv): nfcorpus (default) or scidocs.
+# Pick one per run:  RAGMIA_DATASET=scidocs python scripts/01_prepare_data.py
+DATASET = os.environ.get("RAGMIA_DATASET", "nfcorpus")
 BEIR_URL = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{DATASET}.zip"
+RAW_DIR = ROOT / "data" / "raw"           # downloaded datasets (shared by all)
+DATA_DIR = ROOT / "data" / DATASET        # split, embeddings, questions, sessions for this dataset
+RESULTS_DIR = ROOT / "results" / DATASET  # results and figures for this dataset
 
 # Member / non-member sampling
 SEED = 528
@@ -29,7 +32,6 @@ QUERY_MODEL = "qwen2.5:7b"        # writes the attacker's questions; must differ
 NUM_QUERIES = 5                   # query budget per target document (paper default)
 NLI_MODEL = "tasksource/deberta-base-long-nli"   # the "fact checker" (same model as the paper)
 NLI_MAX_LEN = 1024                # tokens; NFCorpus abstracts fit comfortably
-RESULTS_DIR = ROOT / "results"
 
 
 # Defenses

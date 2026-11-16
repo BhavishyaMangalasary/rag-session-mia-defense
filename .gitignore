@@ -7,7 +7,7 @@ __pycache__/
 
 # Generated data and raw outputs (large / reproducible)
 data/
-results/raw/
+results/*/raw/
 
 # Secrets and OS files
 .env

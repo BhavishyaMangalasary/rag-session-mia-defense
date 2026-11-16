@@ -107,12 +107,12 @@ Design choices and deviations from the paper are logged in
 6. **Limits:** decoys (2 per question) evade the session rule; honest users who focus on one
    specific paper are indistinguishable from attackers for every retrieval-based defense.
 
-![Attack AUC per defense](results/figures/fig1_attack_auc.png)
-![Who gets flagged](results/figures/fig2_who_gets_flagged.png)
-![Detection trade-off](results/figures/fig5_tradeoff.png)
+![Attack AUC per defense](results/nfcorpus/figures/fig1_attack_auc.png)
+![Who gets flagged](results/nfcorpus/figures/fig2_who_gets_flagged.png)
+![Detection trade-off](results/nfcorpus/figures/fig5_tradeoff.png)
 
-More figures: [query budget](results/figures/fig3_query_budget.png) ·
-[adaptive attacker](results/figures/fig4_adaptive_attacker.png) ·
+More figures: [query budget](results/nfcorpus/figures/fig3_query_budget.png) ·
+[adaptive attacker](results/nfcorpus/figures/fig4_adaptive_attacker.png) ·
 full numbers in [`docs/decisions.md`](docs/decisions.md).
 
 ## Results
