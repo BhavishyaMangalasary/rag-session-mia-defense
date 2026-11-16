@@ -220,3 +220,43 @@ The session rule is a near-free **detector** for everyday traffic (flag, rate-li
 but on its own it cannot stop the leak (one answer already gives AUC 0.924) and decoys evade it.
 Adding session memory to Mirabel gives the strongest protection against both the standard and
 the adaptive attacker, at Mirabel's cost to honest users. No single defense wins on every axis.
+
+
+## Step 7 — Second dataset: SCIDOCS (branch `scidocs`)
+
+Every step was rerun unchanged on BEIR SCIDOCS (25,657 computer-science abstracts, 1,000 queries)
+to test whether the NFCorpus findings generalise. Dataset is chosen per run with
+`RAGMIA_DATASET=scidocs`; each dataset has its own `data/<dataset>/` and `results/<dataset>/`.
+
+| Choice | Value | Why |
+|---|---|---|
+| Why SCIDOCS | Used by both MEntA and Mirabel; the paper reports Mirabel's worst benign FPR there (88.1%) | Strongest test of the honest-user claim |
+| Not TREC-COVID | — | 171k documents (too slow to embed on a laptop) and only 50 queries (too few for honest sessions) |
+| Target filter | Same as NFCorpus (≥80 words, ≥2 real queries): 416 candidates, 2 near-duplicates rejected, store = 25,607 | Identical design across datasets |
+| Focused honest sessions | 40 (only 44 SCIDOCS documents have ≥5 real queries) **[deviation]** | Browsing (200) and deep-dive (100) sessions unchanged |
+| Everything else | Same models, prompts, settings, seed | Only the corpus changes |
+
+### Results: NFCorpus vs SCIDOCS
+
+| Metric | NFCorpus | SCIDOCS |
+|---|---|---|
+| Attack AUC, no defense (paper, Table 5) | 0.986 (0.935) | 0.978 (0.936) |
+| AUC from 1 answer only | 0.924 | 0.892 |
+| Mirabel: single honest queries flagged (paper) | 50.6% (59.6%) | 81.4% (88.1%) |
+| AUC: Mirabel / session / Mirabel + memory | 0.756 / 0.939 / 0.669 | 0.651 / 0.903 / **0.594** (CI 0.486–0.697) |
+| TPR @ 1% FPR: Mirabel / session / Mirabel + memory | 0.22 / 0.18 / 0.14 | 0.10 / 0.18 / 0.04 |
+| Attack sessions flagged: Mirabel / session / Mirabel + memory | 79% / 82% / 93% | 99% / 71% / 99% |
+| Real honest sessions flagged, Mirabel (focused / browsing) | 95.5% / 97.0% | 97.5% / 100% |
+| Real honest sessions flagged, session rule | **0% / 0%** | **0% / 0%** |
+| Session rule N=5, K=2: attacks / focused honest | 99% / 8.5% | 95% / 2.5% |
+| Honest deep-dive flagged: Mirabel / session | 75% / 70% | 98% / 58% |
+| Target leaks per member session, Mirabel + memory (0 → 3 decoys) | 0.78 → 0.94 | 0.42 → 0.42 |
+| Decoys (2 per question) evade session rule (5,3) | yes | yes |
+
+**Interpretation.** Every finding repeats on a second domain. The defenses rank the same on both
+datasets (Mirabel + memory < Mirabel < session < none), one answer is almost enough, Mirabel
+flags nearly every honest session, and the session rule flags none. On SCIDOCS, Mirabel + memory
+brings the attacker's AUC to 0.594 with a CI that includes 0.5. The session rule catches fewer
+attacks on SCIDOCS (71% vs 82%), likely because the larger corpus has more near-identical papers,
+so the same document wins top-1 less consistently; at K=2 it still catches 95%. Against harder
+deep-dive users its advantage over Mirabel is larger on SCIDOCS (58% vs 98% flagged).
